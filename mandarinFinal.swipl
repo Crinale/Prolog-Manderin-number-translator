@@ -1,0 +1,146 @@
+/*
+Final Project BY Devon Chu and Brian Hoang 
+
+*Usage* To use this in prolog please use mandarin(SO,SC,ME,MC).
+SO = Sound 
+SC = Sound Catagory
+ME = Meaning
+MC = Meaning Catagory
+
+*What* This program says the numbers in Mandarin all the way to 1000 although it does not do it sequential order. This program shows how the numbers in Mandarin are put together for example for 892 it will say "ba bai jiu shi er" then it will say what its composed of 8 * 100 + 9 * 10 + 2. Then when you want to see the number copy what is in the ME as a standalone statment for example  (_G422::_G422 is 8*100+9*10+2). It will say _G422 = 892.
+
+*Note*: The reason why in the conditionals we used R1::_=R1(this type of statement) and not just R1::_ is because when using it you only get prologs way of saying there is a variable there and does not show the number. Adding the =R1 at the end allows it to do the calculation first then put in the number where it needs to be.
+
+*Note*: We saw in the e-mail that there were a lot of people doing the numeral project and we should be using R :: R is _ We did not decide to go with it because the way we did it its basically the same thing (This shows there are different ways of doing things!).
+
+*Note*: fulldisplay is there just in case anything gets too large or If we plan to extend the number system to the millions(That is for a different project someday in the future.) 
+
+*Design Note*: There were a few instances that we had to account for whenever there was a 101 102 103... anything with a 0 in the middle we had to use ling meaning 0 this is becasue of the way you write in mandarin that its not just yi bai yi... its yi bai ling yi. This does not count when in the double digits only triple digits. 
+
+*Design Note*: When in the triple digits you need a infix for 10 so 211 you need er bai yi shi yi you cannot have shi by itself. If you are talking about double digits 10 11 12 13 you dont need the infix of 1 in front of shi (but this is only for the case of 10 - 19) anthing after that 20 and on you will need 2,3,4... in front of shi
+
+*/
+
+
+:- ['doublecolon.swipl'].
+:-['fulldisplay.swipl'].
+	mandarin([ling ],numeral,R1::R1=0, [number,ones,zero]).    /*0*/
+	mandarin([yi ],numeral,R1::R1=1, [number,unit,first]).    /*1*/
+	mandarin([er ],numeral,R1::R1=2, [number,unit,nonfirst]). /*2*/
+	mandarin([san],numeral,R1::R1=3, [number,unit,nonfirst]). /*3*/
+	mandarin([si ],numeral,R1::R1=4, [number,unit,nonfirst]). /*4*/
+	mandarin([wu ],numeral,R1::R1=5, [number,unit,nonfirst]). /*5*/
+	mandarin([liu],numeral,R1::R1=6, [number,unit,nonfirst]). /*6*/
+	mandarin([qi ],numeral,R1::R1=7, [number,unit,nonfirst]). /*7*/
+	mandarin([ba ],numeral,R1::R1=8, [number,unit,nonfirst]). /*8*/
+	mandarin([jiu],numeral,R1::R1=9, [number,unit,nonfirst]). /*9*/
+	mandarin([shi],numeral,R2::R2=10,[number,ten,first]).     /*10*/
+	mandarin([bai],numeral,R4::R4=100,[number,onehundred,first]). /*100*/
+	mandarin([yi,qian],numeral,R9::R9=1000,[number,thousand,first]). /*1000*/
+
+
+	 /* 20,30,40,50,60,70,80,90 */
+	mandarin(A,numeral,R::R is (R1 * R2),[number,ten,tens]):-    
+		mandarin(C,numeral,R1::_=R1,[number,unit,nonfirst]),
+		mandarin(E,numeral,R2::_=R2,[number,ten,first]),
+		append(C,E,A).
+
+
+	/* 11 12 13 14 15 16 17 18 19 */
+	mandarin(A,numeral,R::R is (R4 + R1),[number,tens,nozero]):-		
+		mandarin(E,numeral,R4::_=R4,[number,ten,first]),
+		mandarin(F,numeral,R1::_=R1,[number,unit,_]),
+		append(E,F,A).
+
+
+	/* 21 22 23 24 25 26 27 28 29 
+	   31 32 33 34 35 36 37 38 39.... 99	*/
+	mandarin(A,numeral,R::R is (R3 * R4) + R1,[number,tens,nozero]):-		
+		mandarin([C],numeral,R3::_=R3,[number,unit,nonfirst]),
+		mandarin([E],numeral,R4::_=R4,[number,ten,first]),
+		mandarin(F,numeral,R1::_=R1,[number,unit,_]),
+		append([C,E],F,A).
+
+
+	/* 101 102 103 104 105 106 107 108 109 */
+	mandarin(A,numeral,R::R is (R5 * R4) + R6 + R1,[number,onehundred,ones]):-							
+			mandarin([P],numeral,R5::_=R5,[number,unit,first]),
+			mandarin([Q],numeral,R6::_=R6,[number,ones,zero]),
+			mandarin([C],numeral,R4::_=R4,[number,onehundred,first]),
+			mandarin([G],numeral,R1::_=R1,[number,unit,_]),
+			append([P,C],[Q,G],A).
+
+
+	/* 110 */
+	mandarin(A,numeral,R::R is (R5 * R4) + (R5 * R2),[number,onehundred,tens]):-						
+			mandarin([P],numeral,R5::_=R5,[number,unit,first]),
+			mandarin([C],numeral,R4::_=R4,[number,onehundred,first]),
+			mandarin([G],numeral,R2::_=R2,[number,ten,first]),
+			append([P,C],[P,G],A).
+
+
+	/* 120 130 140 150 160 170 180 190 */ 
+	mandarin(A,numeral,R::R is (R5 * R4) + (R1 * R2),[number,onehundred,tens]):-	
+		mandarin([P],numeral,R5::_=R5,[number,unit,first]),
+		mandarin([D],numeral,R4::_=R4,[number,onehundred,first]),
+		mandarin([C],numeral,R1::_=R1,[number,unit,nonfirst]),
+		mandarin([E],numeral,R2::_=R2,[number,ten,first]),
+		append([P,D],[C,E],A).
+
+
+	/* 111 112 113 114 115 116 117 118 119 */	  
+	mandarin(A,numeral,R::R is (R5 * R4) + (R5 * R1) + R2,[number,onehundreds,nozero]):-
+		mandarin([P],numeral,R5::_=R5,[number,unit,first]),   
+		mandarin([C],numeral,R4::_=R4,[number,onehundred,first]),
+		mandarin([E],numeral,R1::_=R1,[number,ten,first]),
+		mandarin([F],numeral,R2::_=R2,[number,unit,_]),
+		append([P,C],[P,E,F],A).
+		
+
+	
+	/* 121 122 123 124 125 126 127 128 129 .... 199	*/
+	mandarin(A,numeral,R::R is (R5 * R4) + (R2 * R1) + R3,[number,onehundreds,nozero]):-
+	    mandarin([P],numeral,R5::_=R5,[number,unit,first]),   
+		mandarin([C],numeral,R4::_=R4,[number,onehundred,first]),
+		mandarin([G],numeral,R2::_=R2,[number,unit,nonfirst]),
+		mandarin([E],numeral,R1::_=R1,[number,ten,first]),
+		mandarin(F,numeral,R3::_=R3,[number,unit,_]),
+		append([P,C,G,E],F,A).
+		
+
+	/* 200 300 400 500 600 700 800 900 */
+	mandarin(A,numeral,R::R is (R1 * R4),[number,onehundred,nonfirst]):-   
+		mandarin(C,numeral,R4::_=R4,[number,onehundred,first]),
+		mandarin(E,numeral,R1::_=R1,[number,unit,nonfirst]),
+		append(E,C,A).
+
+
+	/* 201 202 203 204 205 206 207 208 209
+	   301 302 303 304 305 306 307 308 309 ... 909 */	
+	mandarin(A,numeral,R::R is (R2 * R5) + R6 + R1,[number,onehundred,ones]):-	
+		mandarin([C],numeral,R5::_=R5,[number,onehundred,first]),
+		mandarin([Q],numeral,R6::_=R6,[number,ones,zero]),	
+		mandarin([E],numeral,R2::_=R2,[number,unit,nonfirst]),
+		mandarin([G],numeral,R1::_=R1,[number,unit,_]),
+		append([E,C],[Q,G],A).
+
+
+	/* 210 220 230 240 250 260 270 280 290
+	   310 320 330 340 350 360 370 380 390 ... 990 */ 
+	mandarin(A,numeral,R::R is (R2 * R5) + (R1 * R3) ,[number,onehundred,tens]):-						
+		mandarin([C],numeral,R5::_=R5,[number,onehundred,first]),	
+		mandarin([E],numeral,R2::_=R2,[number,unit,nonfirst]),
+		mandarin([G],numeral,R1::_=R1,[number,unit,_]),
+		mandarin([I],numeral,R3::_=R3,[number,ten,first]),
+		append([E,C],[G,I],A).
+
+
+	/* 211 212 213 214 215 216 217 218 219 
+	   311 312 313 314 315 316 317 318 319 ...999 */
+	mandarin(A,numeral,R::R is (R2 * R5) + (R1 * R3) + R4,[number,onehundred,nozero]):-   
+		mandarin([C],numeral,R5::_=R5,[number,onehundred,first]),	
+		mandarin([E],numeral,R2::_=R2,[number,unit,nonfirst]),
+		mandarin([G],numeral,R1::_=R1,[number,unit,_]),
+		mandarin([I],numeral,R3::_=R3,[number,ten,first]),
+		mandarin(J,numeral,R4::_=R4,[number,unit,_]),
+		append([E,C,G,I],J,A).
